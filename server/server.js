@@ -60,7 +60,7 @@ app.post("/register", async (req, res) => {
       password: hashedPassword,
     });
 
-    res.status(201).json({ message: "User created successfully" });
+    res.status(201).json({ message: "Register Successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

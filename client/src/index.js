@@ -8,9 +8,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Contents
 import Home from ".//Contents/Home";
 import Login from "./Login";
+import Register from "./Register";
+import Forgot from "./Forgot";
 import Profile from "./Contents/Profile";
 import Shop from "./Contents/Shop";
-import Register from "./Register";
+
 
 ReactDOM.render(
   <BrowserRouter>
@@ -18,6 +20,7 @@ ReactDOM.render(
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot" element={<Forgot />} />
       <Route path="/home" element={<Home />} />
       <Route path="/shop" element={<Shop />} />
       <Route path="/profile" element={<Profile />} />

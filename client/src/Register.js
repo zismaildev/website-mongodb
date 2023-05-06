@@ -45,7 +45,7 @@ export default function SignUp() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user: data.get("user"),
+        username: data.get("user"),
         email: data.get("email"),
         password: data.get("password"),
         fullname: data.get("firstName"),
@@ -54,16 +54,23 @@ export default function SignUp() {
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.message === "User created successfully") {
-          //alert('register sucess')
-          Swal.fire("Register Success", "You clicked the button!", "success");
-          window.location = "/login";
+        if (data.message === "Register Successfully") {
+          Swal.fire({
+            title: "Register Sucess",
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+            confirmButtonText: "Click To Login",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location = "/login";
+            }
+          });
         } else if (data.message === "Username already exists") {
-          Swal.fire("Register Failed", "Username already exists!", "error");
+          Swal.fire("Register Failed", "Username already exists", "warning");
         } else if (data.message === "Email already exists") {
-          Swal.fire("Register Failed", "Email already exists!", "error");
+          Swal.fire("Register Failed", "Email already exists", "warning");
         } else {
-          Swal.fire("Register Failed", "Unknown error occurred!", "error");
+          Swal.fire("Register Failed", "Unknown error occurred", "error");
         }
       })
       .catch((error) => {
@@ -87,7 +94,7 @@ export default function SignUp() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign up
+            Register
           </Typography>
           <Box
             component="form"
