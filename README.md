@@ -1,6 +1,6 @@
 # Getting Started with Create React App
 
-This project was chatgpt with [Create React App](https://github.com/zismaildev/website-mongodb).
+This project was chatgpt with [Zismil-Dev](https://github.com/zismaildev/website-mongodb).
 
 ## Available Scripts
 
