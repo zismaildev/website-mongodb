@@ -67,7 +67,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-
 // Login
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -98,9 +97,9 @@ app.post("/login", async (req, res) => {
       //คืนค่าผู้ใช้กลับมา
       starus: "ok",
       username: user.username,
-      email: user.email,
-      fullname: user.fullname,
-      lastname: user.lastname,
+      //email: user.email,
+      //fullname: user.fullname,
+      //lastname: user.lastname,
       token,
     });
   } catch (err) {
@@ -109,6 +108,37 @@ app.post("/login", async (req, res) => {
       status: "error",
       message: "Internal server error",
     });
+  }
+});
+
+// Authen System
+app.post("/authen", async function (req, res, next) {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    var decoded = jwt.verify(token, JWT_SECRET);
+    const client = new MongoClient(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    await client.connect();
+    const db = client.db();
+    const user = await db
+      .collection("users")
+      .findOne({ username: decoded.username });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+    res.json({
+      status: "ok",
+      username: user.username,
+      email: user.email,
+      fullname: user.fullname,
+      lastname: user.lastname,
+    });
+  } catch (err) {
+    res.status(401).json({ status: "error", message: err.message });
   }
 });
 

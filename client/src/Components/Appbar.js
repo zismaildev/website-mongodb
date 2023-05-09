@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -13,10 +14,43 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 
-const pages = ["Shop", "Blog"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const pages = ["Shop", "Profile", "Dashboard"];
+const settings = ["Logout"];
 
 function ZAppBar() {
+  const [username, setUsername] = useState("");
+  const [authStatus, setAuthStatus] = useState("");
+
+  // Check token
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch("http://localhost:7777/authen", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data && data.status === "ok" && data.username) {
+          setUsername(data.username);
+          setAuthStatus("success");
+        } else {
+          localStorage.removeItem("token");
+          setAuthStatus("failed");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }, []);
+
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -41,8 +75,8 @@ function ZAppBar() {
     setAnchorElUser(null);
   };
 
-  const handleToShop = (event) => {
-    window.location.href = '../Contents/Shop.js';
+  const handleToPage = (page) => {
+    window.location.href = `/${page.toLowerCase()}`;
   };
 
   return (
@@ -97,23 +131,16 @@ function ZAppBar() {
                 display: { xs: "block", md: "none" },
               }}
             >
-              {pages.map((pages) => {
-                if (pages === "Shop") {
-                  return (
-                    <MenuItem key={pages} onClick={handleToShop}>
-                      <Typography textAlign="center">{pages}</Typography>
-                    </MenuItem>
-                  );
-                }
-                return (
-                  <MenuItem key={pages} onClick={handleOpenNavMenu}>
-                    <Typography textAlign="center">{pages}</Typography>
-                  </MenuItem>
-                );
-              })}
+              {pages.map((page) => (
+                <MenuItem key={page} onClick={() => handleToPage(page)}>
+                  <Typography textAlign="center">{page}</Typography>
+                </MenuItem>
+              ))}
             </Menu>
           </Box>
+
           <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+
           <Typography
             variant="h5"
             noWrap
@@ -136,10 +163,10 @@ function ZAppBar() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={handleCloseNavMenu}
+                onClick={() => handleToPage(page)}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
-                {page}
+                <Typography textAlign="center">{page}</Typography>
               </Button>
             ))}
           </Box>
@@ -147,7 +174,23 @@ function ZAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                {authStatus === "success" && (
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Typography
+                      component="h5"
+                      variant="h6"
+                      sx={{ p: 1, color: "white" }}
+                    >
+                      {username}
+                    </Typography>
+                    <Avatar alt={username} src="/static/images/avatar/1.jpg" />
+                  </Box>
+                )}
+                {authStatus === "failed" && (
+                  <Typography variant="body2" sx={{ ml: 1 }}>
+                    Please login
+                  </Typography>
+                )}
               </IconButton>
             </Tooltip>
             <Menu

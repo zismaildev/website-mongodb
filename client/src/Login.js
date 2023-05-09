@@ -55,26 +55,26 @@ export default function SignInSide() {
     })
       .then((response) => {
         if (response.ok) {
-          Swal.fire({
-            title: "Login Sucess",
-            icon: "success",
-            confirmButtonColor: "#3085d6",
-            confirmButtonText: "Click To Login",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.location = "/home";
-            }
-          });
-          localStorage.setItem("token", data.token);
           return response.json();
-          //window.location = '/home'
         } else {
-          Swal.fire("Login Failed", "Not Found User!", "error");
+          throw new Error("Login Failed");
         }
-        console.log(data)
+      })
+      .then((data) => {
+        localStorage.setItem("token", data.token);
+        Swal.fire({
+          title: "Login Success",
+          icon: "success",
+          confirmButtonColor: "#3085d6",
+          confirmButtonText: "Click To Login",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location = "/home";
+          }
+        });
       })
       .catch((error) => {
-        Swal.fire("Server Is die","error");
+        Swal.fire("Login Failed", "Invalid username or password!", "error");
       });
   };
 
