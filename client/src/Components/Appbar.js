@@ -14,7 +14,7 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 
-const pages = ["Shop", "Profile", "Dashboard"];
+const pages = ["Home", "Shop", "Profile", "Dashboard"];
 const settings = ["Logout"];
 
 function ZAppBar() {
@@ -99,7 +99,7 @@ function ZAppBar() {
               textDecoration: "none",
             }}
           >
-            Logo
+            Zismail
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>

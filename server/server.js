@@ -4,6 +4,8 @@ const cors = require("cors");
 const { MongoClient } = require("mongodb");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(bodyParser.json());
@@ -139,6 +141,59 @@ app.post("/authen", async function (req, res, next) {
     });
   } catch (err) {
     res.status(401).json({ status: "error", message: err.message });
+  }
+});
+
+// Forgot Password
+app.post("/forgot", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate reset token
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // Save token to user document
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+    await user.save();
+
+    // Send reset password email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_ADDRESS,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_ADDRESS,
+      to: user.email,
+      subject: "Password Reset Request",
+      text:
+        "You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n" +
+        "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
+        `http://${req.headers.host}/reset/${token}\n\n` +
+        "If you did not request this, please ignore this email and your password will remain unchanged.\n",
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+      console.log("Email sent: " + info.response);
+      res.json({ message: "Password reset email sent" });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
