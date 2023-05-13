@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -24,6 +23,16 @@ function ZAppBar() {
   // Check token
   useEffect(() => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      setAuthStatus("failed");
+      return;
+    }
+    const authData = JSON.parse(localStorage.getItem("authData"));
+    if (authData && authData.status === "ok" && authData.username) {
+      setUsername(authData.username);
+      setAuthStatus("success");
+      return;
+    }
     fetch("http://localhost:7777/authen", {
       method: "POST",
       headers: {
@@ -41,8 +50,10 @@ function ZAppBar() {
         if (data && data.status === "ok" && data.username) {
           setUsername(data.username);
           setAuthStatus("success");
+          localStorage.setItem("authData", JSON.stringify(data));
         } else {
           localStorage.removeItem("token");
+          localStorage.removeItem("authData");
           setAuthStatus("failed");
         }
       })
@@ -51,8 +62,8 @@ function ZAppBar() {
       });
   }, []);
 
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -171,60 +182,67 @@ function ZAppBar() {
             ))}
           </Box>
 
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                {authStatus === "success" && (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography
-                      component="h5"
-                      variant="h6"
-                      sx={{ p: 1, color: "white" }}
-                    >
-                      {username}
-                    </Typography>
-                    <Avatar alt={username} src="/static/images/avatar/1.jpg" />
-                  </Box>
-                )}
-                {authStatus === "failed" && (
-                  <Typography variant="body2" sx={{ ml: 1 }}>
-                    Please login
+          {authStatus === "success" && (
+            <Box sx={{ flexGrow: 0 }}>
+              <Tooltip title={username}>
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                  <Typography
+                    component="h5"
+                    variant="h6"
+                    sx={{ p: 1, color: "white" }}
+                  >
+                    {username}
                   </Typography>
-                )}
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: "45px" }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => {
-                if (setting === "Logout") {
+                  <Avatar alt={username} src="/static/images/avatar/1.jpg" />
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: "45px" }}
+                id="menu-appbar"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
+              >
+                {settings.map((setting) => {
+                  if (setting === "Logout") {
+                    return (
+                      <MenuItem key={setting} onClick={handleLogout}>
+                        <Typography textAlign="center">{setting}</Typography>
+                      </MenuItem>
+                    );
+                  }
                   return (
-                    <MenuItem key={setting} onClick={handleLogout}>
+                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">{setting}</Typography>
                     </MenuItem>
                   );
-                }
-                return (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                );
-              })}
-            </Menu>
-          </Box>
+                })}
+              </Menu>
+            </Box>
+          )}
+
+          {authStatus === "failed" && (
+            <Box sx={{ flexGrow: 0 }}>
+              <Typography
+                component="h5"
+                variant="h6"
+                sx={{ ml: 1 }}
+                onClick={() => handleToPage("Login")}
+                style={{ cursor: "pointer" }}
+              >
+                Please login
+              </Typography>
+            </Box>
+          )}
         </Toolbar>
       </Container>
     </AppBar>

@@ -13,7 +13,7 @@ import Register from "./Register";
 import Forgot from "./Forgot";
 import Profile from "./Contents/Profile";
 import Shop from "./Contents/Shop";
-
+import Dashboard from "./Contents/Dashboard";
 
 ReactDOM.render(
   <BrowserRouter>
@@ -25,6 +25,7 @@ ReactDOM.render(
       <Route path="/home" element={<Home />} />
       <Route path="/shop" element={<Shop />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   </BrowserRouter>,
   document.getElementById("root")
