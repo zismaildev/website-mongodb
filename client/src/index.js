@@ -14,6 +14,7 @@ import Forgot from "./Forgot";
 import Profile from "./Contents/Profile";
 import Shop from "./Contents/Shop";
 import Dashboard from "./Contents/Dashboard";
+import AvatarUpload from "./Components/AvatarUpload";
 
 ReactDOM.render(
   <BrowserRouter>
@@ -26,6 +27,7 @@ ReactDOM.render(
       <Route path="/shop" element={<Shop />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/avatarUpload" element={<AvatarUpload />} />
     </Routes>
   </BrowserRouter>,
   document.getElementById("root")

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ZAppBar from "../Components/Appbar";
-import { Card, Container, Grid, Typography } from "@mui/material";
+import { Avatar, Card, Container, Grid, Typography } from "@mui/material";
 
-import AboutmeJpg from "../Assets/Contents/aboutme.jpg";
 
 function Profile() {
   const [username, setUsername] = useState("");
@@ -75,7 +74,7 @@ function Profile() {
                 <Grid container>
                   <Grid md={3} p={3}>
                     <img
-                      src={AboutmeJpg}
+                      src={Avatar}
                       alt="profile"
                       className="profilepic"
                     />

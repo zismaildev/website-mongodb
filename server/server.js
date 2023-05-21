@@ -5,7 +5,6 @@ const { MongoClient } = require("mongodb");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(bodyParser.json());

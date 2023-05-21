@@ -13,7 +13,7 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 
-const pages = ["Home", "Shop", "Profile", "Dashboard"];
+const pages = ["Home", "Shop", "Profile", "Dashboard", "AvatarUpload"];
 const settings = ["Logout"];
 
 function ZAppBar() {
