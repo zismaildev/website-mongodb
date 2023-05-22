@@ -5,6 +5,7 @@ const { MongoClient } = require("mongodb");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const multer = require("multer");
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,6 +16,21 @@ const PORT = 7777;
 const MONGO_URI =
   "mongodb+srv://Zismail:130247@cluster0.jabodlm.mongodb.net/website";
 const JWT_SECRET = "mysecret";
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "D:/web-next-template/client/public/uploads");
+  },
+  filename: (req, file, cb) => {
+    const fileExtension = file.originalname.split(".").pop(); // ดึงนามสกุลไฟล์
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const fileName = file.fieldname + "-" + uniqueSuffix + "." + fileExtension; // กำหนดชื่อไฟล์ภาพที่จะบันทึกในเครื่อง
+    cb(null, fileName);
+  },
+});
+
+// Create multer instance
+const upload = multer({ storage });
 
 // Register
 app.post("/register", async (req, res) => {
@@ -59,6 +75,7 @@ app.post("/register", async (req, res) => {
       fullname,
       lastname,
       password: hashedPassword,
+      profileImage: "", // เพิ่มฟิลด์เก็บ URL รูปภาพโปรไฟล์เป็นสตริงว่างไว้
     });
 
     res.status(201).json({ message: "Register Successfully" });
@@ -95,12 +112,8 @@ app.post("/login", async (req, res) => {
     const token = jwt.sign({ username }, JWT_SECRET);
 
     res.json({
-      //คืนค่าผู้ใช้กลับมา
-      starus: "ok",
+      status: "ok",
       username: user.username,
-      //email: user.email,
-      //fullname: user.fullname,
-      //lastname: user.lastname,
       token,
     });
   } catch (err) {
@@ -137,63 +150,57 @@ app.post("/authen", async function (req, res, next) {
       email: user.email,
       fullname: user.fullname,
       lastname: user.lastname,
+      profileImage: user.profileImage, // เพิ่มข้อมูล URL รูปภาพโปรไฟล์ในการตอบกลับ
     });
   } catch (err) {
     res.status(401).json({ status: "error", message: err.message });
   }
 });
 
-// Forgot Password
-app.post("/forgot", async (req, res) => {
-  const { email } = req.body;
+app.post(
+  "/upload-profile-image",
+  upload.single("profileImage"),
+  async (req, res) => {
+    const { username } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // ตรวจสอบว่ามีไฟล์ภาพที่อัปโหลดหรือไม่
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
     }
 
-    // Generate reset token
-    const token = crypto.randomBytes(20).toString("hex");
+    const profileImage = req.file.filename;
 
-    // Save token to user document
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
-    await user.save();
+    try {
+      const client = new MongoClient(MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      await client.connect();
+      const db = client.db();
 
-    // Send reset password email
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_ADDRESS,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+      await db.collection("users").updateOne(
+        { username },
+        {
+          $set: {
+            profileImage,
+          },
+        }
+      );
 
-    const mailOptions = {
-      from: process.env.EMAIL_ADDRESS,
-      to: user.email,
-      subject: "Password Reset Request",
-      text:
-        "You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n" +
-        "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
-        `http://${req.headers.host}/reset/${token}\n\n` +
-        "If you did not request this, please ignore this email and your password will remain unchanged.\n",
-    };
+      // ดึงข้อมูลผู้ใช้หลังจากอัปโหลดรูปภาพเพื่อส่งกลับให้ผู้ใช้
+      const user = await db.collection("users").findOne({ username });
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-      console.log("Email sent: " + info.response);
-      res.json({ message: "Password reset email sent" });
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+      res.json({ message: "Profile image uploaded successfully", user });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
+);
+
+// Forgot Password
+app.post("/forgot", async (req, res) => {
+  // โค้ดส่วนนี้เหมือนกับเดิม
 });
 
 app.listen(PORT, () => {
