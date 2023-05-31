@@ -1,0 +1,61 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-attachment: fixed;
+  background-image: url(https://wallpaperaccess.com/full/1567665.png);
+  /**background-image: linear-gradient(120deg, #3882f1,#1100ff);**/
+}
+
+a {
+  text-decoration: none;
+}
+
+.Card-Footer {
+  background-color: whitesmoke;
+}
+
+.Card-Register {
+  text-align: center;
+  align-items: center;
+  background-image: url(/assets/Background-Register.jpg);
+}
+
+.Card-Bg {
+  background-attachment: fixed;
+  background-image: url(/assets/Background-Card.png);
+}
+
+.Profile-Das {
+  max-width: 100%;
+  height: auto;
+  margin-left: 15px;
+  border-radius: 10%;
+}
+
+.AboutUs {
+  padding: 5px;
+  justify-content: center;
+}
+
+.Sad-Das {
+  padding: 50px;
+  margin: 10px;
+  max-width: 100%;
+  height: auto;
+  margin-left: 25px;
+  align-items: center;
+  text-align: center;
+}
+
+/* Zoom In #1 */
+.hover-zoom {
+  -webkit-transform: scale(1);
+  transform: scale(1);
+  -webkit-transition: 0.1s ease-in-out;
+  transition: 0.1s ease-in-out;
+}
+
+.hover-zoom:hover {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}

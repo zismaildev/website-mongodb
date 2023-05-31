@@ -1,40 +1,40 @@
 // Certificate
-import CMU from "../Assets/Certificate/CMU_MOOC_LMS.png";
-import CU from "../Assets/Certificate/CU_MOOC_LMS.png";
-import PYTHON from "../Assets/Certificate/RMUTT_MOOC_LMS_Python.png";
-import DIGITAL from "../Assets/Certificate/Digital_Detective.png";
-import JavaSriptJS from "../Assets/Certificate/BorntoDev_JavaScript.png";
-import ESSENTIAL from "../Assets/Certificate/BorntoDev_Essential_SQL.png";
-import SCRATCH from "../Assets/Certificate/scratch_certificates.png";
-import COMSCIENCE from "../Assets/Certificate/Borntodev-Introduction-To-Computer-Science.png";
-import SCHOOLOGY from "../Assets/Certificate/Schoology.png";
-import ARDUINO from "../Assets/Certificate/arduino.jpg";
+import CMU from "/public/assets/Certificate/CMU_MOOC_LMS.png"
+import CU from "/public/assets/Certificate/CU_MOOC_LMS.png";
+import PYTHON from "/public/assets/Certificate/RMUTT_MOOC_LMS_Python.png";
+import DIGITAL from "/public/assets/Certificate/Digital_Detective.png";
+import JavaSriptJS from "/public/assets/Certificate/BorntoDev_JavaScript.png";
+import ESSENTIAL from "/public/assets/Certificate/BorntoDev_Essential_SQL.png";
+import SCRATCH from "/public/assets/Certificate/scratch_certificates.png";
+import COMSCIENCE from "/public/assets/Certificate/Borntodev-Introduction-To-Computer-Science.png";
+import SCHOOLOGY from "/public/assets/Certificate/Schoology.png";
+import ARDUINO from "/public/assets/Certificate/arduino.jpg";
 
 // Skill
-import html from "../Assets/Skill/html.png";
-import css from "../Assets/Skill/css.png";
-import javascript from "../Assets/Skill/javascript.png";
-import reactImage from "../Assets/Skill/react.png";
-import arduino from "../Assets/Skill/arduino.png";
-import python from "../Assets/Skill/python.png";
-import mysql from "../Assets/Skill/mysql.png";
-import lua from "../Assets/Skill/lua.png";
-import nodejs from "../Assets/Skill/node.png";
+import html from "/public/assets/Skill/html.png";
+import css from "/public/assets/Skill/css.png";
+import javascript from "/public/assets/Skill/javascript.png";
+import reactImage from "/public/assets/Skill/react.png";
+import arduino from "/public/assets/Skill/arduino.png";
+import python from "/public/assets/Skill/python.png";
+import mysql from "/public/assets/Skill/mysql.png";
+import lua from "/public/assets/Skill/lua.png";
+import nodejs from "/public/assets/Skill/node.png";
 
 // Educaction
-import School1 from "../Assets/School/1.jpg";
-import School2 from "../Assets/School/2.png";
-import School3 from "../Assets/School/3.jpg";
-import School4 from "../Assets/School/4.png";
-import School5 from "../Assets/School/5.jpg";
+import School1 from "/public/assets/School/1.jpg";
+import School2 from "/public/assets/School/2.png";
+import School3 from "/public/assets/School/3.jpg";
+import School4 from "/public/assets/School/4.png";
+import School5 from "/public/assets/School/5.jpg";
 
 // Activity
-import Rice from "../Assets/Activity/2.jpg";
-import Mudyoum from "../Assets/Activity/3.jpg";
-import Kanomthai from "../Assets/Activity/kanomthai.jpg";
-import Tree from "../Assets/Activity/4.jpg";
-import Digital from "../Assets/Activity/5.jpg";
-import Bloot from "../Assets/Activity/6.jpg";
+import Rice from "/public/assets/Activity/2.jpg";
+import Mudyoum from "/public/assets/Activity/3.jpg";
+import Kanomthai from "/public/assets/Activity/kanomthai.jpg";
+import Tree from "/public/assets/Activity/4.jpg";
+import Digital from "/public/assets/Activity/5.jpg";
+import Bloot from "/public/assets/Activity/6.jpg";
 
 // Educaction
 export const EducactionData = [
