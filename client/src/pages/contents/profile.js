@@ -11,9 +11,10 @@ export default function Profile() {
   const [lastname, setLastname] = useState("");
   const [authStatus, setAuthStatus] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [profileImage, setProfileImage] = useState(""); // เพิ่ม state profileImage
+  const [avatar, setAvatar] = useState("");
 
   useEffect(() => {
+    // ตรวจสอบ token จาก localStorage
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -21,6 +22,7 @@ export default function Profile() {
       return;
     }
 
+    // ตรวจสอบข้อมูลการเข้าสู่ระบบจาก localStorage
     const authData = JSON.parse(localStorage.getItem("authData"));
 
     if (authData?.status === "ok" && authData.username) {
@@ -28,11 +30,12 @@ export default function Profile() {
       setEmail(authData.email);
       setFullname(authData.fullname);
       setLastname(authData.lastname);
-      setProfileImage(authData.profileImage); // เพิ่มบรรทัดนี้
+      setAvatar(authData.avatar);
       setAuthStatus("success");
       return;
     }
 
+    // ส่งคำขอยืนยันตัวตนไปยังเซิร์ฟเวอร์
     fetch("http://localhost:7777/authen", {
       method: "POST",
       headers: {
@@ -52,7 +55,7 @@ export default function Profile() {
           setEmail(data.email);
           setFullname(data.fullname);
           setLastname(data.lastname);
-          setProfileImage(data.profileImage); // เพิ่มบรรทัดนี้
+          setAvatar(data.avatar);
           setAuthStatus("success");
           localStorage.setItem("authData", JSON.stringify(data));
         } else {
@@ -82,9 +85,10 @@ export default function Profile() {
     }
 
     const formData = new FormData();
-    formData.append("profileImage", selectedImage);
+    formData.append("avatar", selectedImage);
 
-    fetch("http://localhost:7777/upload-profile-image", {
+    // อัปโหลดรูปภาพไปยังเซิร์ฟเวอร์
+    fetch("http://localhost:7777/uploads", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -98,14 +102,15 @@ export default function Profile() {
         return response.json();
       })
       .then((data) => {
-        fetch("http://localhost:7777/save-profile-image", {
+        // อัปเดตรูปภาพโปรไฟล์ในฐานข้อมูล
+        fetch("http://localhost:7777/uploads", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            image: data.imageUrl,
+            avatar: data.filename,
           }),
         })
           .then((response) => {
@@ -120,7 +125,7 @@ export default function Profile() {
               title: "Image Uploaded",
               text: "The image has been uploaded successfully.",
             });
-            setProfileImage(data.imageUrl); // เพิ่มบรรทัดนี้
+            setAvatar(data.filename);
           })
           .catch((error) => {
             console.error("Error:", error);
@@ -160,7 +165,7 @@ export default function Profile() {
                       src={
                         selectedImage
                           ? URL.createObjectURL(selectedImage)
-                          : profileImage || "/assets/user-avatar.png" // เปลี่ยนเงื่อนไขแสดงรูปภาพ
+                          : avatar || "/assets/user-avatar.png"
                       }
                       width={250}
                       height={250}
@@ -203,10 +208,10 @@ export default function Profile() {
                   src="/assets/sad.png"
                   width={250}
                   height={250}
-                  alt="profile"
+                  alt="sad"
                 />
-                <Typography component="h1" variant="h4" textAlign="center">
-                  Please login
+                <Typography component="h1" variant="h4" mt={5}>
+                  Unauthorized Access
                 </Typography>
               </Container>
             )}

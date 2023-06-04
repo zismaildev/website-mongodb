@@ -19,7 +19,7 @@ import Head from "next/head";
 const theme = createTheme();
 
 export default function Register() {
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
@@ -28,69 +28,67 @@ export default function Register() {
     const username = data.get("user");
     const email = data.get("email");
     const password = data.get("password");
+    const confirmPassword = data.get("confirmPassword");
 
-    if (!firstName) {
-      Swal.fire("Register Failed", "Please enter your first name", "warning");
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/;
+
+    if (!firstName || !lastName || !username || !email || !password) {
+      Swal.fire("Register Failed", "Please fill in all fields", "warning");
       return;
     }
 
-    if (!lastName) {
-      Swal.fire("Register Failed", "Please enter your last name", "warning");
+    if (!passwordRegex.test(password)) {
+      Swal.fire(
+        "Register Failed",
+        "Password must contain at least one lowercase letter, one uppercase letter, one digit, and be at least 6 characters long",
+        "warning"
+      );
       return;
     }
 
-    if (!username) {
-      Swal.fire("Register Failed", "Please enter a username", "warning");
+    if (password !== confirmPassword) {
+      Swal.fire("Register Failed", "Password does not match", "warning");
       return;
     }
 
-    if (!email) {
-      Swal.fire("Register Failed", "Please enter an email address", "warning");
-      return;
-    }
-
-    if (!password) {
-      Swal.fire("Register Failed", "Please enter a password", "warning");
-      return;
-    }
-
-    fetch("http://localhost:7777/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: username,
-        email: email,
-        password: password,
-        fullname: firstName,
-        lastname: lastName,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.message === "Register Successfully") {
-          Swal.fire({
-            title: "Register Success",
-            icon: "success",
-            confirmButtonColor: "#3085d6",
-            confirmButtonText: "Click To Login",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.location = "./login";
-            }
-          });
-        } else if (data.message === "Username already exists") {
-          Swal.fire("Register Failed", "Username already exists", "warning");
-        } else if (data.message === "Email already exists") {
-          Swal.fire("Register Failed", "Email already exists", "warning");
-        } else {
-          Swal.fire("Register Failed", "Unknown error occurred", "error");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+    try {
+      const response = await fetch("http://localhost:7777/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          email: email,
+          password: password,
+          fullname: firstName,
+          lastname: lastName,
+        }),
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Swal.fire({
+          title: "Register Success",
+          icon: "success",
+          confirmButtonColor: "#3085d6",
+          confirmButtonText: "Click To Login",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location = "./login";
+          }
+        });
+      } else if (data.message === "Username already exists") {
+        Swal.fire("Register Failed", "Username already exists", "warning");
+      } else if (data.message === "Email already exists") {
+        Swal.fire("Register Failed", "Email already exists", "warning");
+      } else {
+        Swal.fire("Register Failed", "Unknown error occurred", "error");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
@@ -177,6 +175,17 @@ export default function Register() {
                       label="Password"
                       type="password"
                       id="password"
+                      autoComplete="new-password"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      required
+                      fullWidth
+                      name="confirmPassword"
+                      label="Confirm Password"
+                      type="password"
+                      id="confirmPassword"
                       autoComplete="new-password"
                     />
                   </Grid>

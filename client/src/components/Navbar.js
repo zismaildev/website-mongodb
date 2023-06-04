@@ -29,9 +29,9 @@ const settings = ["Logout"];
 function Navbar() {
   const [username, setUsername] = useState("");
   const [authStatus, setAuthStatus] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false); // เพิ่ม state สำหรับบทบาท admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [avatar, setAvatar] = useState("");
 
-  // Check token
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -42,7 +42,8 @@ function Navbar() {
     if (authData && authData.status === "ok" && authData.username) {
       setUsername(authData.username);
       setAuthStatus("success");
-      setIsAdmin(authData.role === "admin"); // เพิ่มการตรวจสอบบทบาท admin
+      setIsAdmin(authData.role === "admin");
+      setAvatar(localStorage.getItem("avatar")); // ดึง URL รูป Avatar จาก localStorage
       return;
     }
     fetch("http://localhost:7777/authen", {
@@ -62,11 +63,16 @@ function Navbar() {
         if (data && data.status === "ok" && data.username) {
           setUsername(data.username);
           setAuthStatus("success");
-          setIsAdmin(data.role === "admin"); // เพิ่มการตรวจสอบบทบาท admin
+          setIsAdmin(data.role === "admin");
           localStorage.setItem("authData", JSON.stringify(data));
+          if (data.avatar) {
+            setAvatar(data.avatar);
+            localStorage.setItem("avatar", data.avatar);
+          }
         } else {
           localStorage.removeItem("token");
           localStorage.removeItem("authData");
+          localStorage.removeItem("avatar"); // ลบ URL รูป Avatar จาก localStorage ในกรณีที่ไม่สำเร็จ
           setAuthStatus("failed");
         }
       })
@@ -75,25 +81,27 @@ function Navbar() {
       });
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("authData");
+    localStorage.removeItem("avatar"); // ลบ URL รูป Avatar จาก localStorage เมื่อออกจากระบบ
+    setAuthStatus("failed");
+    window.location = "/contents/login";
+  };
+
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
+
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
-  };
-
-  const handleLogout = (event) => {
-    event.preventDefault();
-    localStorage.removeItem("token");
-    localStorage.removeItem("authData");
-    window.location = "/contents/login";
   };
 
   const handleCloseUserMenu = () => {
@@ -187,11 +195,9 @@ function Navbar() {
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               {pages.map((page) => {
-                // เพิ่มเงื่อนไขในการแสดงเมนู Dashboard
                 if (page === "Dashboard" && !isAdmin) {
                   return null;
                 }
-
                 return (
                   <Button
                     key={page}
@@ -215,7 +221,11 @@ function Navbar() {
                     >
                       {username}
                     </Typography>
-                    <Avatar alt={username} src="/assets/user-avatar.png" />
+                    {avatar ? (
+                      <Avatar alt={username} src={avatar} />
+                    ) : (
+                      <Avatar alt={username} src="/assets/user-avatar.png" />
+                    )}
                   </IconButton>
                 </Tooltip>
                 <Menu
@@ -234,35 +244,24 @@ function Navbar() {
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
                 >
-                  {settings.map((setting) => {
-                    if (setting === "Logout") {
-                      return (
-                        <MenuItem key={setting} onClick={handleLogout}>
-                          <Typography textAlign="center">{setting}</Typography>
-                        </MenuItem>
-                      );
-                    }
-                    return (
-                      <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                        <Typography textAlign="center">{setting}</Typography>
-                      </MenuItem>
-                    );
-                  })}
+                  {settings.map((setting) => (
+                    <MenuItem key={setting} onClick={handleLogout}>
+                      <Typography textAlign="center">{setting}</Typography>
+                    </MenuItem>
+                  ))}
                 </Menu>
               </Box>
             )}
-
             {authStatus === "failed" && (
               <Box sx={{ flexGrow: 0 }}>
-                <Typography
-                  component="h5"
-                  variant="h6"
-                  sx={{ ml: 1 }}
-                  onClick={() => handleToPage("login")}
-                  style={{ cursor: "pointer" }}
+                <Button
+                  color="inherit"
+                  component="a"
+                  href="/contents/login"
+                  sx={{ ml: 2 }}
                 >
-                  Please login
-                </Typography>
+                  <Typography>Login</Typography>
+                </Button>
               </Box>
             )}
           </Toolbar>

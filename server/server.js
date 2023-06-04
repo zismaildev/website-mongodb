@@ -30,7 +30,7 @@ const JWT_SECRET = "mysecret";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "D:/website-mongodb/client/public/uploads");
+    cb(null, "D:/website-mongodb/server/uploads");
   },
   filename: (req, file, cb) => {
     const fileExtension = file.originalname.split(".").pop();
@@ -43,17 +43,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Register
-app.post("/register", async (req, res) => {
+app.post("/register", upload.single("avatar"), async (req, res) => {
   try {
     const { username, email, fullname, lastname, password, role } = req.body;
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    // Validate username format
     const usernameRegex = /^[a-zA-Z0-9]+$/;
     if (!usernameRegex.test(username)) {
       return res.status(400).json({ message: "Invalid username format" });
@@ -80,8 +78,8 @@ app.post("/register", async (req, res) => {
       fullname,
       lastname,
       password: hashedPassword,
-      profileImage: "",
-      role: "member", // Add the role field to the user document
+      avatar: "",
+      role: "member",
     });
 
     res.status(201).json({ message: "Register Successfully" });
@@ -119,18 +117,15 @@ app.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      status: "error",
-      message: "Internal server error",
-    });
+    res.status(500).json({ status: "error", message: "Internal server error" });
   }
 });
 
 // Authen System
-app.post("/authen", async function (req, res, next) {
+app.post("/authen", async (req, res) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
-    var decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
 
     const db = await connectToDatabase();
 
@@ -150,8 +145,8 @@ app.post("/authen", async function (req, res, next) {
       email: user.email,
       fullname: user.fullname,
       lastname: user.lastname,
-      profileImage: user.profileImage,
-      role: user.role, // Include the role in the response
+      avatar: user.avatar,
+      role: user.role,
     });
   } catch (err) {
     res.status(401).json({ status: "error", message: err.message });
@@ -159,71 +154,38 @@ app.post("/authen", async function (req, res, next) {
 });
 
 // Upload Image
-app.post(
-  "/upload-profile-image",
-  upload.single("profileImage"),
-  async (req, res) => {
-    try {
-      const { username } = req.body;
-
-      if (!req.file) {
-        return res.status(400).json({ message: "No image file provided" });
-      }
-
-      const profileImage = req.file.filename;
-
-      const db = await connectToDatabase();
-
-      await db.collection("users").updateOne(
-        { username },
-        {
-          $set: {
-            profileImage,
-          },
-        }
-      );
-
-      res.json({ message: "Profile image uploaded successfully" });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  }
-);
-
-// Save Profile Image
-app.post("/save-profile-image", async (req, res) => {
-  const { image } = req.body;
-  const token = req.headers.authorization.split(" ")[1];
-  const decoded = jwt.verify(token, JWT_SECRET);
-  const username = decoded.username; // Use the decoded username from the token
-
+app.post("/uploads", upload.single("avatar"), async (req, res) => {
   try {
-    const client = new MongoClient(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    await client.connect();
-    const db = client.db();
+    const { filename } = req.file;
 
-    const user = await db.collection("users").findOne({ username });
+    const db = await connectToDatabase();
+
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await db
+      .collection("users")
+      .findOne({ username: decoded.username });
+
     if (!user) {
       return res
         .status(404)
         .json({ status: "error", message: "User not found" });
     }
 
-    user.profileImage = image;
+    user.avatar = filename;
     await db
       .collection("users")
-      .updateOne({ username }, { $set: { profileImage: image } });
+      .updateOne(
+        { username: decoded.username },
+        { $set: { avatar: filename } }
+      );
 
-    res.status(200).json({ status: "ok" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "error", message: "Internal server error" });
-  } finally {
-    client.close();
+    res.status(200).json({ message: "Image uploaded and saved successfully" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({
+      message: "An error occurred while uploading and saving the image",
+    });
   }
 });
 
@@ -254,17 +216,16 @@ app.post("/forgot-password", async (req, res) => {
       }
     );
 
-    // Send reset password email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "your-email@gmail.com", // Replace with your Gmail email
-        pass: "your-password", // Replace with your Gmail password
+        user: "your-email@gmail.com",
+        pass: "your-password",
       },
     });
 
     const mailOptions = {
-      from: "your-email@gmail.com", // Replace with your Gmail email
+      from: "your-email@gmail.com",
       to: email,
       subject: "Reset Password",
       text: `Click the link to reset your password: http://localhost:3000/reset-password/${token}`,
@@ -280,7 +241,7 @@ app.post("/forgot-password", async (req, res) => {
 
     res.json({
       status: "ok",
-      message: "Reset password link sent to your email",
+      message: "Email sent with instructions to reset password",
     });
   } catch (err) {
     console.error(err);
@@ -302,7 +263,7 @@ app.post("/reset-password", async (req, res) => {
 
     if (!user) {
       return res
-        .status(401)
+        .status(400)
         .json({ status: "error", message: "Invalid or expired token" });
     }
 
@@ -319,7 +280,7 @@ app.post("/reset-password", async (req, res) => {
       }
     );
 
-    res.json({ status: "ok", message: "Password reset successfully" });
+    res.json({ status: "ok", message: "Password reset successful" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: "error", message: "Internal server error" });
@@ -327,5 +288,5 @@ app.post("/reset-password", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
