@@ -43,7 +43,7 @@ function Navbar() {
       setUsername(authData.username);
       setAuthStatus("success");
       setIsAdmin(authData.role === "admin");
-      setAvatar(localStorage.getItem("avatar")); // ดึง URL รูป Avatar จาก localStorage
+      setAvatar(localStorage.getItem("avatar"));
       return;
     }
     fetch("http://localhost:7777/authen", {
@@ -72,7 +72,7 @@ function Navbar() {
         } else {
           localStorage.removeItem("token");
           localStorage.removeItem("authData");
-          localStorage.removeItem("avatar"); // ลบ URL รูป Avatar จาก localStorage ในกรณีที่ไม่สำเร็จ
+          localStorage.removeItem("avatar");
           setAuthStatus("failed");
         }
       })
@@ -84,7 +84,7 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("authData");
-    localStorage.removeItem("avatar"); // ลบ URL รูป Avatar จาก localStorage เมื่อออกจากระบบ
+    localStorage.removeItem("avatar");
     setAuthStatus("failed");
     window.location = "/contents/login";
   };
@@ -230,38 +230,17 @@ function Navbar() {
                 </Tooltip>
                 <Menu
                   sx={{ mt: "45px" }}
-                  id="menu-appbar"
+                  id="user-menu"
                   anchorEl={anchorElUser}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
                 >
                   {settings.map((setting) => (
                     <MenuItem key={setting} onClick={handleLogout}>
-                      <Typography textAlign="center">{setting}</Typography>
+                      <Typography>{setting}</Typography>
                     </MenuItem>
                   ))}
                 </Menu>
-              </Box>
-            )}
-            {authStatus === "failed" && (
-              <Box sx={{ flexGrow: 0 }}>
-                <Button
-                  color="inherit"
-                  component="a"
-                  href="/contents/login"
-                  sx={{ ml: 2 }}
-                >
-                  <Typography>Login</Typography>
-                </Button>
               </Box>
             )}
           </Toolbar>

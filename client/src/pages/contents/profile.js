@@ -30,7 +30,6 @@ export default function Profile() {
       setEmail(authData.email);
       setFullname(authData.fullname);
       setLastname(authData.lastname);
-      setAvatar(authData.avatar);
       setAuthStatus("success");
       return;
     }
@@ -55,9 +54,45 @@ export default function Profile() {
           setEmail(data.email);
           setFullname(data.fullname);
           setLastname(data.lastname);
-          setAvatar(data.avatar);
           setAuthStatus("success");
           localStorage.setItem("authData", JSON.stringify(data));
+        } else {
+          localStorage.removeItem("token");
+          localStorage.removeItem("authData");
+          setAuthStatus("failed");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+
+    // ดึงข้อมูลโปรไฟล์ผู้ใช้และรูปภาพ avatar จากเซิร์ฟเวอร์
+    fetch(`http://localhost:7777/user/${username}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data?.user) {
+          const { username, email, fullname, lastname, avatar } = data.user;
+          setUsername(username);
+          setEmail(email);
+          setFullname(fullname);
+          setLastname(lastname);
+          setAuthStatus("success");
+          setAvatar(avatar);
+          localStorage.setItem(
+            "authData",
+            JSON.stringify({
+              status: "ok",
+              username,
+              email,
+              fullname,
+              lastname,
+            })
+          );
         } else {
           localStorage.removeItem("token");
           localStorage.removeItem("authData");
@@ -103,7 +138,7 @@ export default function Profile() {
       })
       .then((data) => {
         // อัปเดตรูปภาพโปรไฟล์ในฐานข้อมูล
-        fetch("http://localhost:7777/uploads", {
+        fetch("http://localhost:7777/updates", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -161,17 +196,23 @@ export default function Profile() {
               <Grid container spacing={2} sx={{ mt: 3, pb: 10 }}>
                 <Grid item md={4}>
                   <label htmlFor="profile-image">
-                    <Image
-                      src={
-                        selectedImage
-                          ? URL.createObjectURL(selectedImage)
-                          : avatar || "/assets/user-avatar.png"
-                      }
-                      width={250}
-                      height={250}
-                      className="Profile-Das"
-                      alt="profile"
-                    />
+                    {avatar ? (
+                      <Image
+                        src={avatar}
+                        width={250}
+                        height={250}
+                        className="Profile-Das"
+                        alt={`Profile Picture of ${username}`}
+                      />
+                    ) : (
+                      <Image
+                        src="/assets/user-avatar.png"
+                        width={250}
+                        height={250}
+                        className="Profile-Das"
+                        alt="profile"
+                      />
+                    )}
                     <input
                       id="profile-image"
                       type="file"

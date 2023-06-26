@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const multer = require("multer");
+const path = require("path"); // เพิ่มโมดูล path
 
 const app = express();
 app.use(bodyParser.json());
@@ -30,7 +31,7 @@ const JWT_SECRET = "mysecret";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "D:/website-mongodb/server/uploads");
+    cb(null, "D:/Website/website-mongodb/server/uploads");
   },
   filename: (req, file, cb) => {
     const fileExtension = file.originalname.split(".").pop();
@@ -186,6 +187,37 @@ app.post("/uploads", upload.single("avatar"), async (req, res) => {
     res.status(500).json({
       message: "An error occurred while uploading and saving the image",
     });
+  }
+});
+
+// Get User Avatar
+app.get("/user/avatar/:username", async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection("users");
+
+    const username = req.params.username;
+
+    const user = await collection.findOne({ username });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+
+    const avatarPath = user.avatar;
+
+    if (!avatarPath) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Avatar not found" });
+    }
+
+    res.sendFile(path.join(__dirname, "uploads", avatarPath));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Internal server error" });
   }
 });
 
